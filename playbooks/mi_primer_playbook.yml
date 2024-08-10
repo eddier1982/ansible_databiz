@@ -1,0 +1,24 @@
+---
+- name: Mi primer playbook
+  hosts: all
+  gather_facts: false
+  become: yes
+
+  tasks:
+
+  - name: Instalar Httpd
+    ansible.builtin.dnf:
+      name: httpd
+      state: latest
+
+  - name: Validar si el firewall está arriba
+    ansible.builtin.service:
+      name: firewalld
+      state: started
+    register: firewalld_status
+
+  - name: Restart firewalld if not running
+    ansible.builtin.service:
+      name: firewalld
+      state: restarted
+    when: not firewalld_status.status.ActiveState == "active"
