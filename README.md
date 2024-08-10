@@ -18,3 +18,8 @@
 
         ssh-keygen
         ssh-copy-id
+
+## 
+Inventarios
+
+https://docs.ansible.com/ansible/latest/inventory_guide/intro_inventory.html
