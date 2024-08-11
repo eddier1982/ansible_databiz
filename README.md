@@ -153,7 +153,7 @@ ansible -i inventory -m yum -a 'name=rsync state=absent' WUE1ATPSPFIMAP1 --becom
 ansible -i inventory -m file -a 'path=/etc/cron.allow state=touch mode=600' secrhel --become
 
 # copy
-ansible -i inventory -m copy -a 'src=/home/provseti/all_logs.sh dest=/tmp/all_logs.sh owner=root group=root mode=640' guaral --become
+ansible -i inventory -m copy -a 'src=/home/test1/all_logs.sh dest=/tmp/all_logs.sh owner=root group=root mode=640' other --become
 
 # blockinfile
 ansible -i inventory -m blockinfile -a 'path={ruta} block="| prueba "'
@@ -162,13 +162,18 @@ ansible -i inventory -m blockinfile -a 'path={ruta} block="| prueba "'
 ansible -i inventory -m cron -a 'name="Integrity FS" minute="0" hour="5" user=root job="/usr/bin/aide.wrapper --config /etc/aide/aide.conf --check"' localhost
 
 #### user
-ansible -i inventory.yml -m user -a 'name=provseti groups=adminso' prdrhel
+ansible -i inventory.yml -m user -a 'name=test1 groups=adminso' prdrhel
 
 #### ansible.builtin.group
 ansible -i inventory.yml -m ansible.builtin.group -a 'name=adminso state=present' drrhel
 ```
 
 ## Playbooks
+
+La siguiente estructura de comando es como se ejecuta un playbook
+```
+ansible-playbook path_playbook.yml -i path_inventory
+```
 
 ### Mi primer playbook
 
@@ -177,20 +182,20 @@ ansible -i inventory.yml -m ansible.builtin.group -a 'name=adminso state=present
          hosts: all
          gather_facts: false
          become: yes
-       
+
          tasks:
-       
+
          - name: Instalar Httpd
            ansible.builtin.dnf:
              name: httpd
              state: latest
-       
+
          - name: Validar si el firewall está arriba
            ansible.builtin.service:
              name: firewalld
              state: started
            register: firewalld_status
-       
+
          - name: Restart firewalld if not running
            ansible.builtin.service:
              name: firewalld
