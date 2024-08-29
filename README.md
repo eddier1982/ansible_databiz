@@ -2,12 +2,16 @@
 
 ## Sesiones realizadas
 
-| Fecha | Tema |
-|:----- |:-----|
-|05/ago/24 20:00 - 22:00 | Intrducción a Ansible, Instalación y relación de confianza |
-|08/ago/24 20:00 - 21:00 | Command Line (ansible ad-hoc), invenatrio básico |
-|09/ago/24 20:00 - 21:00 | Diferencias entre algunos módulos, creación primar playbook |
-
+| Fecha | horas | Tema |
+|:----- |:-----|:-----|
+|05/ago/24 20:00 - 22:00 | 2 | Intrducción a Ansible, Instalación y relación de confianza |
+|08/ago/24 20:00 - 21:00 | 1 | Command Line (ansible ad-hoc), invenatrio básico |
+|09/ago/24 20:00 - 21:00 | 1 | Diferencias entre algunos módulos, creación primar playbook |
+|13/ago/24 20:00 - 21:00 | 1 | Solución de preguntas |
+|20/ago/24 20:00 - 21:00 | 1 | Conceptos básicos de playbook y roles |
+|22/ago/24 20:00 - 21:00 | 1 | Ejercicio de práctica, pre-requsitos de instalar Oracle DB |
+|27/ago/24 20:00 - 21:00 | 1 |
+|29/ago/24 20:00 - 21:00 | 1 |
 
 ## Conceptos
 
@@ -201,3 +205,44 @@ ansible-playbook path_playbook.yml -i path_inventory
              name: firewalld
              state: restarted
            when: not firewalld_status.status.ActiveState == "active"
+
+### Características de un playbook
+
+El poder de Ansible es que puedes usar playbooks para ejecutar múltiples y complejas tareas a un conjunto de hosts objetivo de una manera fácilmente y repetible.
+
+Una *task* es la aplicación de un módulo para realizar un trabajo específico. Un *play* es una secuencia de *tasks* que se aplican, en orden, a uno o más hosts seleccionados de su inventario. Un *playbook* es un archivo de texto que contiene una lista de una o más *playbooks* para ejecutar en un orden específico.
+
+Las secuencias le permiten transformar un conjunto largo y complejo de tareas administrativas manuales en una rutina fácilmente repetible con resultados predecibles y satisfactorios. En un playbook, puede guardar la secuencia de tareas de un play en un formato legible por el ser humano y de ejecución inmediata. Las propias tareas, por la forma en que están escritas, documentan los pasos necesarios para desplegar su aplicación o infraestructura.
+
+**Ejemplo**
+
+
+```
+---
+- name: Configure important user consistently
+  hosts: servera.lab.example.com
+  tasks:
+    - name: Newbie exists with UID 4000
+      ansible.builtin.user:
+        name: newbie
+        uid: 4000
+        state: present
+```
+
+
+Un playbook es un archivo de texto escrito en formato YAML y normalmente se guarda con la extensión .**yml**. El playbook utiliza sangría con caracteres de espacio para indicar la estructura de sus datos. YAML no impone requisitos estrictos sobre cuántos espacios se utilizan para la sangría, pero se aplican dos reglas básicas:
+  
+  - Los elementos de datos situados en el mismo nivel jerárquico (por ejemplo, los elementos de una misma lista) deben tener la misma sangría.
+  - Los elementos que son hijos de otro elemento deben tener más sangría que sus padres. También puede añadir líneas en blanco para facilitar la lectura.
+
+***Importante: Sólo puede utilizar caracteres de espacio para la sangría; no utilice caracteres de tabulación.***
+
+Un playbook inicia con una línea formada por tres guiones (---) para indicar el inicio del documento. Puede terminar con tres puntos (...) para indicar el final del documento, aunque en la práctica se suele omitir.
+
+Entre esos marcadores, el playbook se define como una lista de plays. Un elemento de una lista YAML comienza con un guión seguido de un espacio. Por ejemplo, una lista YAML podría tener el siguiente aspecto:
+
+```
+- apple
+- orange
+- grape
+```
