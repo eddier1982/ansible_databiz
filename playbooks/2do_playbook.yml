@@ -1,0 +1,42 @@
+---
+- name: Mi primer playbook
+  hosts: all
+  gather_facts: false
+  remote_user: apache
+  become: yes
+
+  tasks:
+
+  - name: Instalar Httpd
+    ansible.builtin.dnf:
+      name: httpd
+      state: latest
+
+  - name: Validar si el firewall está arriba
+    ansible.builtin.service:
+      name: firewalld
+      state: started
+    register: firewalld_status
+
+  - name: Restart firewalld if not running
+    ansible.builtin.service:
+      name: firewalld
+      state: restarted
+    when: not firewalld_status.status.ActiveState == "active"
+
+
+- name: mi 2do playbook
+  hosts: localhost
+  gather_facts: yes
+  become: yes
+
+  tasks:
+
+  - name: Get uptime information
+    ansible.builtin.shell: /usr/bin/uptime
+    register: result
+
+  - name: Print return information from the previous task
+    ansible.builtin.debug:
+      var: result
+      verbosity: 2 
