@@ -10,8 +10,7 @@
 |13/ago/24 20:00 - 21:00 | 1 | Solución de preguntas |
 |20/ago/24 20:00 - 21:00 | 1 | Conceptos básicos de playbook y roles |
 |22/ago/24 20:00 - 21:00 | 1 | Ejercicio de práctica, pre-requsitos de instalar Oracle DB |
-|27/ago/24 20:00 - 21:00 | 1 |
-|29/ago/24 20:00 - 21:00 | 1 |
+|29/ago/24 20:00 - 21:00 | 1 | 
 
 ## Conceptos
 
@@ -246,3 +245,69 @@ Entre esos marcadores, el playbook se define como una lista de plays. Un element
 - orange
 - grape
 ```
+
+En el ejemplo de playbook anterior, la línea después de --- comienza con un guión e inicia el primero (y único) play de la lista de plays.
+El play en sí es una colección de pares llave-valor. Las llaves del mimo play deben tener la misma sangría. El siguiente ejemplo muestra un fragmento YAML con tres llaves. Las dos primeras llaves tienen valores simples. La tercera tiene como valor una lista de tres elementos.
+
+```
+name: just an example
+hosts: webservers
+tasks:
+  - first
+  - second
+  - third
+```
+
+En el play inicial de ejemplo tiene tres llaves: nombre, hosts y tareas. Todas estas llaves tienen la misma sangría.
+La primera línea del play de ejemplo comienza con un guión y un espacio (indicando que el play es el primer elemento de una lista), y luego la primera llave, nombre. La llave nombre asocia una cadena arbitraria al play como una etiqueta que identifica el propósito del play. La llave name es opcional, pero se recomienda porque ayuda a documentar tu playbook. Esto es especialmente útil cuando un playbook contiene múltiples plays.
+
+```
+- name: Configure important user consistently
+```
+
+La segunda llave del play es una llave hosts, que especifica los hosts contra los que se ejecutan las tareas del play. La llave hosts toma un patrón de hosts como valor, como los nombres de hosts gestionados o grupos en el inventario.
+
+```
+hosts: servera.lab.example.com
+```
+
+Finalmente, la última llave en el play es tasks, cuyo valor especifica una lista de tareas a ejecutar para este play. Este ejemplo tiene una única tarea, que ejecuta el módulo ansible.builtin.user con argumentos específicos (para asegurar que el usuario newbie existe y tiene el UID 4000).
+
+```
+tasks:
+  - name: newbie exists with UID 4000
+    ansible.builtin.user:
+      name: newbie
+      uid: 4000
+      state: present
+```
+
+La llave de tareas es la parte del play que realmente enumera, en orden, las tareas que deben ejecutarse en los hosts gestionados. Cada tarea de la lista es en sí misma una colección de pares llave-valor.
+En este ejemplo, la única tarea del play tiene dos llaves:
+ 
+ - name es una etiqueta opcional que documenta el propósito de la tarea. Es una buena idea nombrar todas sus tareas para ayudar a documentar el propósito de cada paso del proceso de automatización.
+ - ansible.builtin.user es el módulo a ejecutar para esta tarea. Sus argumentos se pasan como una colección de pares llave-valor, que son hijos del módulo ( name, uid, y state).
+
+El siguiente es otro ejemplo de una llave de tareas con múltiples tareas, cada una usando el módulo ansible.builtin.service para asegurar que un servicio debe iniciarse en el arranque:
+
+```
+tasks:
+  - name: Web server is enabled
+    ansible.builtin.service:
+      name: httpd
+      enabled: true
+  - name: NTP server is enabled
+    ansible.builtin.service:
+      name: chronyd
+      enabled: true
+  - name: Postfix is enabled
+    ansible.builtin.service:
+      name: postfix
+      enabled: true
+```
+
+***Importante: El orden en el que se enumeran los plays y las tasks en un playbook es importante, porque Ansible los ejecuta en el mismo orden.***
+
+### Módulos para las tareas
+
+Los módulos son las herramientas que los plays utilizan para realizar tareas. Se han escrito cientos de módulos que hacen cosas diferentes. Normalmente puedes encontrar un módulo probado y de propósito especial que haga lo que necesitas, a menudo como parte del entorno de ejecución de automatización por defecto.
