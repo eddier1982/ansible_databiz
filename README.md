@@ -10,7 +10,7 @@
 |13/ago/24 20:00 - 21:00 | 1 | Solución de preguntas |
 |20/ago/24 20:00 - 21:00 | 1 | Conceptos básicos de playbook y roles |
 |22/ago/24 20:00 - 21:00 | 1 | Ejercicio de práctica, pre-requsitos de instalar Oracle DB |
-|29/ago/24 20:00 - 21:00 | 1 | 
+|29/ago/24 20:00 - 21:00 | 1 | Check de sistaxis de código (ansible lint --check) y uso de ansible-vault |
 
 ## Conceptos
 
@@ -311,3 +311,134 @@ tasks:
 ### Módulos para las tareas
 
 Los módulos son las herramientas que los plays utilizan para realizar tareas. Se han escrito cientos de módulos que hacen cosas diferentes. Normalmente puedes encontrar un módulo probado y de propósito especial que haga lo que necesitas, a menudo como parte del entorno de ejecución de automatización por defecto.
+
+El paquete ansible-core incluye una única colección de contenidos de Ansible llamada **ansible.builtin.** Estos módulos están siempre disponibles. Visite [https://docs.ansible.com/ansible/latest/collections/ansible/builtin/](https://docs.ansible.com/ ansible/latest/collections/ansible/builtin/) para ver una lista de los módulos que contiene la colección ansible.builtin.
+
+### Comando de verificación
+
+Al comento de ejecutar un playbook puede aumentar el ouput de la ejecución agregando:
+
+| Opción | Descripción |
+|:-------|:------------|
+| -v | Muestra los resultados de la tarea |
+| -vv | Muestra los resultados de la tarea y la configuración de la tarea |
+| -vvv | Muestra información extra de conexión |
+
+También se puede utilizar la línea de comandos agregando extra variables para realizar check, por ejemplo
+
+```
+ansible-playbook name_playbook.yml -i path/inventory --check 
+ansible-navigator run -m stdout  name_playbook.yml --syntax-check
+```
+
+Para facilitar la validación del código tambien se cuenta con la herramienta **ansible-lint**. Si se tiene los repositorios correctos de RHEL 9 y la suscripción activa, bastará con solo ejecutar
+
+```
+sudo dnf install ansible-lint
+```
+
+También puede hacer la instalación utilizando phyton como está en este [https://ansible.readthedocs.io/projects/lint/installing/](https://ansible.readthedocs.io/projects/lint/installing/). Un ejemplo de ejecución:
+
+```
+[user@localhost ansible]$ ansible-lint change_pass_win.yml 
+WARNING  Overriding detected file kind 'yaml' with 'playbook' for given positional argument: change_pass_win.yml
+WARNING  Listing 1 violation(s) that are fatal
+syntax-check: couldn't resolve module/action 'ansible.windows.win_shell'. This often indicates a misspelling, missing collection, or incorrect module path.
+change_pass_win.yml:16:7 [WARNING]: provided hosts list is empty, only localhost is available. Note that
+the implicit localhost does not match 'all'
+ERROR! couldn't resolve module/action 'ansible.windows.win_shell'. This often indicates a misspelling, missing collection, or incorrect module path.
+
+The error appears to be in '/home/user/ansible/change_pass_win.yml': line 16, column 7, but may
+be elsewhere in the file depending on the exact syntax problem.
+
+The offending line appears to be:
+
+
+    - name: Listar usuarios de dominio en el server
+      ^ here
+
+
+
+Finished with 1 failure(s), 0 warning(s) on 1 files.
+
+```
+
+Otra herramienta de ayuda es **ansible-vault**, lo que permite encriptar de manera segura data sensible como por ejemplo passwords. Al momento de crear solicitará un password para el archivo, así:
+
+```
+user@localhost ~ % ansible-vault create credentials.yml
+New Vault password: 
+Confirm New Vault password:
+
+```
+Allí deberá estar el contenido relación llave valor, sin comillas, ejemplo: **mypassword: M1p4ssw0rd**
+
+NOTA: debe ser un archivo en fomrato YAML
+
+Al tratar de validar el contenido del archivo por SO o por otra aplicación, estre trendrá una salida así:
+
+```
+user@localhost ~ % cat credentials.yml 
+$ANSIBLE_VAULT;1.1;AES256
+61316330663230633439386233383932393665616334383132643033353831313030323263333331
+3861656565653063623039653166623066636332656530390a366336373862386461643933393836
+30306335633132376666303434333632623038373066343731373039653466326231653666343764
+6431653137383231620a666535306266346330393131383031393037356134303330653831313362
+6361353762313732656333396637356365613036383039393165616166616436623
+```
+Para ver la información del archivo, es solo invocar el vault con la opción de view/edit y suministrando el password podrá verlo o editarlo:
+
+```
+user@localhost ~ % ansible-vault view credentials.yml
+Vault password: 
+mypassword: M1p4ssw0rd
+```
+
+Para ejecutar un playbook utilizando un archivo encriptado, utilice la siguiente sintaxis:
+
+```
+ansible-playbook  ssh-config.yaml --ask-vault-pass
+```
+
+NOTA: Deberá disponer de una declaración de variables en su playbook.
+
+## Roles
+
+Ansible ofrece la capacidad de crear un custom de coleccion de playbooks o tareas, para ello está la herramienta **ansible-galaxy** la que nos permitirá crear un template de la siguiente manera:
+
+```
+user@localhost roles % ansible-galaxy init pruebas1
+- Role pruebas1 was created successfully 
+user@localhost pruebas1 % cd pruebas 1 \ tree
+.
+├── README.md
+├── defaults
+│   └── main.yml
+├── files
+├── handlers
+│   └── main.yml
+├── meta
+│   └── main.yml
+├── tasks
+│   └── main.yml
+├── templates
+├── tests
+│   ├── inventory
+│   └── test.yml
+└── vars
+    └── main.yml
+
+```
+
+Con el siguiente proósito:
+
+| Subdirectorio | Función |
+| :------------ | :------ |
+| defaults      | El archivo main.yml de este directorio contiene los valores por defecto de las variables de rol que pueden sobrescribirse cuando se utiliza el rol. Estas variables tienen baja precedencia y están pensadas para ser cambiadas y personalizadas en los playbook |
+| files         | Este directorio contiene archivos estáticos a los que hacen referencia las tareas de rol |
+| handlers      | El archivo main.yml en este directorio contiene las definiciones de los manejadores del rol |
+| meta          | El archivo main.yml en este directorio contiene información sobre el rol, incluyendo autor, licencia, plataformas y dependencias opcionales del rol |
+| tasks         | El archivo main.yml de este directorio contiene las definiciones de tareas del rol |
+| templates     | Este directorio contiene plantillas Jinja2 que son referenciadas por las tareas de rol |
+| tests         | Este directorio puede contener un inventario y un playbook test.yml que se puede utilizar para probar el rol |
+| vars          | El archivo main.yml en este directorio define los valores de las variables del rol. A menudo estas variables se usan para propósitos internos dentro del rol. Estas variables tienen una alta precedencia y no están pensadas para ser cambiadas cuando se usan en un playbook |
