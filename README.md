@@ -123,6 +123,8 @@ db
 
   **Se pueden agregar variables a cada hosts, como en el ejemplo exista la variable que determina la IP del host. También se pueden hacer grupos y subgrupos** [doc ansible inventory](https://docs.ansible.com/ansible/latest/getting_started/get_started_inventory.html)
 
+Documentación [Building Ansible inventories](https://docs.ansible.com/ansible/latest/inventory_guide/index.html) 
+
 ## Ansible ad-hoc (command line)
 
 ### Estructura general cml
@@ -305,6 +307,7 @@ tasks:
       name: postfix
       enabled: true
 ```
+Documentación de [pre_tasks & post_tasks](https://www.redhat.com/sysadmin/ansible-pretasks-posttasks)
 
 ***Importante: El orden en el que se enumeran los plays y las tasks en un playbook es importante, porque Ansible los ejecuta en el mismo orden.***
 
@@ -313,6 +316,9 @@ tasks:
 Los módulos son las herramientas que los plays utilizan para realizar tareas. Se han escrito cientos de módulos que hacen cosas diferentes. Normalmente puedes encontrar un módulo probado y de propósito especial que haga lo que necesitas, a menudo como parte del entorno de ejecución de automatización por defecto.
 
 El paquete ansible-core incluye una única colección de contenidos de Ansible llamada **ansible.builtin.** Estos módulos están siempre disponibles. Visite [https://docs.ansible.com/ansible/latest/collections/ansible/builtin/](https://docs.ansible.com/ ansible/latest/collections/ansible/builtin/) para ver una lista de los módulos que contiene la colección ansible.builtin.
+
+
+Documentación [Using Ansible playbooks](https://docs.ansible.com/ansible/latest/playbook_guide/index.html)
 
 ### Comando de verificación
 
@@ -402,6 +408,8 @@ ansible-playbook  ssh-config.yaml --ask-vault-pass
 
 NOTA: Deberá disponer de una declaración de variables en su playbook.
 
+Documentación [Ansible Vault](https://docs.ansible.com/ansible/2.9/user_guide/vault.html)
+
 ## Roles
 
 Ansible ofrece la capacidad de crear un custom de coleccion de playbooks o tareas, para ello está la herramienta **ansible-galaxy** la que nos permitirá crear un template de la siguiente manera:
@@ -442,3 +450,5 @@ Con el siguiente proósito:
 | templates     | Este directorio contiene plantillas Jinja2 que son referenciadas por las tareas de rol |
 | tests         | Este directorio puede contener un inventario y un playbook test.yml que se puede utilizar para probar el rol |
 | vars          | El archivo main.yml en este directorio define los valores de las variables del rol. A menudo estas variables se usan para propósitos internos dentro del rol. Estas variables tienen una alta precedencia y no están pensadas para ser cambiadas cuando se usan en un playbook |
+
+Documentación [Roles](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_reuse_roles.html)
