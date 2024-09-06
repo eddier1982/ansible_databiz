@@ -1,0 +1,50 @@
+---
+- name: Playbook de desarrollo de variables
+  hosts: all
+  vars:
+    user_oracle: oracle
+    path_install_oracle: /u01/install
+  vars_files:
+    - vars/packages.yml
+    - vars/dbs.yml
+  
+  when: anisble_vvvvv == 'Oracle Linux'
+
+  pre_tasks:
+
+  - name: Buscar el hostname y almacenarlo
+    ansible.builtin.stat:
+
+
+  tasks:
+
+  - name: Crear usuarios en server con fqdn
+    ansible.builtin.user:
+      name: "{{ users_dboracle.{{ ansible_hostname }}.user }}"
+    delegate_to: dboracle
+    vars:
+    
+  - name: Crear usuarios en server sin fqdn
+    ansible.builtin.user:
+      name: "{{ users_dboracle.{{ ansible_hostname }}.user }}"
+    delegate_to: dbsinfqd
+    notify:
+      - Reinicio de servicio 
+
+
+  - name: instalar paquetes
+    ansible.builtin.dnf:
+      name: "{{ install_packages }}"
+    notify:
+      - Reinicio de servicio
+
+  post_tasks:
+
+  handlers:
+
+  - name: Reinicio de servicio
+    ansible.builtin.hg:
+      
+
+
+      

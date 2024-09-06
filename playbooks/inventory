@@ -1,0 +1,18 @@
+serveroracle01.lab.databiz active=yes
+serveroracle02.lab.databiz user=databiz02 groupdb=oracle
+serveroracle03.lab.databiz
+
+[dboracle]
+serveroracle01.lab.databiz
+serveroracle02.lab.databiz
+serveroracle03.lab.databiz
+
+[dboracle:vars]
+useradmin=databiz
+
+[dbsinfqd]
+serveroracle04
+serveroracle05
+
+[dbsinfqd:vars]
+fqdnservers=lab.databiz

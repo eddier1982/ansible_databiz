@@ -452,3 +452,6 @@ Con el siguiente proósito:
 | vars          | El archivo main.yml en este directorio define los valores de las variables del rol. A menudo estas variables se usan para propósitos internos dentro del rol. Estas variables tienen una alta precedencia y no están pensadas para ser cambiadas cuando se usan en un playbook |
 
 Documentación [Roles](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_reuse_roles.html)
+
+
+### Variables
