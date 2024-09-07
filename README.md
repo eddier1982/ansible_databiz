@@ -11,6 +11,8 @@
 |20/ago/24 20:00 - 21:00 | 1 | Conceptos básicos de playbook y roles |
 |22/ago/24 20:00 - 21:00 | 1 | Ejercicio de práctica, pre-requsitos de instalar Oracle DB |
 |29/ago/24 20:00 - 21:00 | 1 | Check de sistaxis de código (ansible lint --check) y uso de ansible-vault |
+|03/sep/24 19:00 - 20:00 | 1 | Explicación de variables y archivos Jinja |
+|05/sep/24 19:00 - 20:00 | 1 | Resolver dudas de variables, ejemplos de ubicación de variables |
 
 ## Conceptos
 
@@ -455,3 +457,211 @@ Documentación [Roles](https://docs.ansible.com/ansible/latest/playbook_guide/pl
 
 
 ### Variables
+
+|Nombres válidos de variables | Nombres inválidos |
+|:--------------------------- | :---------------- |
+| foo                         | *foo  |
+| foo_env                     | name |
+| foo5                        | foo env |
+| _foo                        | foo.env |
+|                             | 5foo |
+|                             | 12 |
+
+#### Variables simples
+
+Las variables simples combinan un nombre de variable con un único valor. Puede utilizar esta sintaxis (y la sintaxis para listas y diccionarios que se muestra a continuación) en diversos lugares. 
+
+*Ejemplo:*
+
+```
+...
+ruta_instalacion: /home/user/path
+
+```
+
+*Llamado o referecnia*
+```
+...
+ansible.builtin.file:
+  src: "{{ ruta_instalacion }}/archivo.txt"
+  state: absent
+
+```
+***NOTA: la referencia de variables debe estar con comillas, de lo contrario será un error de sintaxis el no tenerlas***
+
+#### Variable booleanas
+
+Ansible acepta una amplia gama de valores para variables booleanas: true/false, 1/0, yes/no, True/False y entre otras. La coincidencia de cadenas válidas no distingue entre mayúsculas y minúsculas. Aunque los ejemplos de la documentación se centran en true/false para ser compatibles con la configuración por defecto de **ansible-lint**, puede utilizar cualquiera de los siguientes:
+
+| Valores válidos | Descripción | 
+|:------------ | :---------- |
+| True , 'true' , 't' , 'yes' , 'y' , 'on' , '1' , 1 , 1.0 | Valores Verdaderos |
+| False , 'false' , 'f' , 'no' , 'n' , 'off' , '0' , 0 , 0.0	| Valores Falsos |
+
+#### Lista de variables
+
+Una lista de variables combina un nombre de variable con múltiples valores. Los valores múltiples pueden almacenarse como una lista detallada o entre corchetes [], separados por comas.
+
+*Ejemplo:*
+
+```
+departamentos:
+  - antioquia
+  - caldas
+  - bolivar
+
+paquetes oracle:
+ - sep
+ - tomcat
+
+---
+ansible.builtin.dnf:
+  name: "{{ paquetes_oracle }}"
+  register: install_packages
+
+```
+
+***NOTA: en el ejemplo de tarea anterior, existe una definición de variable temporal llamada install_packages, esta almacenará la salida del proceso de la tarea***
+
+### Ubicación de variables
+
+ 1. En la ruta de archivos 
+    
+    a. vars/main.yml
+    b. vars/vars_oracle.yml
+    c. vars/vars_so.yml
+
+ 2. En la declaración de inicio del playbook
+
+    ```
+    ---
+    - name: ejemplo de llamado de variables
+      hosts: all
+      vars:
+        user_oracle: oracle
+        path_install_oracle: /u01/install
+      vars_files:
+        - vars/packages.yml
+        - vars/dbs.yml
+      
+      tasks:
+
+      ...
+    ```
+  
+  3. En el archivo de inventario, como variables de hosts o variables de grupos de hosts
+     
+     ```
+     serveroracle01.lab.databiz active=yes
+     serveroracle02.lab.databiz user=databiz02 groupdb=oracle
+     serveroracle03.lab.databiz
+     
+     [dboracle]
+     serveroracle01.lab.databiz
+     serveroracle02.lab.databiz
+     serveroracle03.lab.databiz
+     
+     [dboracle:vars]
+     useradmin=databiz
+    ```
+
+  4. Al ejecutar el playbook
+     
+     ```
+     ansible-playbook example.yml -i path/inventory -e "user_oracle=databiz"
+     ansible-playbook other_example.yml -i path/inventory --extra-vars "user_oracle=databiz user_adminso=databizso"
+     ```
+
+  ### Precedencia de variables
+
+  De menor a mayor
+
+  1. Valores en nla línea de comandos (por ejemplo, -u my_user, estos no son variables)
+  1. defaults en *roles* (si está definido en la estructura del role)
+  2. Archivo de inventario y definición de group_vars
+  3. Archivo de inventario group_vars/all
+  4. Definición en el playbook de group_vars/all
+  5. Archivo de inventario group_vars/*
+  6. Definición en el playbook group_vars/*
+  7. Archivo de inventario y definición de host_vars
+  8. Archivo de  inventario host_vars/*
+  9. Definición en el playbook host_vars/*
+  10. host facts / cached set_facts
+  11. Variables en el playbook
+  12. Variables pront en el playbook
+  13. Archivos de variables
+  14. vars en *roles* (si está definido en la estructura del role)
+  15. Variables en definición de bloques solo para definiciónm de bloques
+  16. Variables en las tareas
+  17. include_vars
+  18. set_facts / variables de registro
+  19. role parámetros de inclusión de role
+  20. parámetros en incluide en el playbook
+  21. extra vars (por ejemploe, -e "user=my_user")(siempre la mayor precendecia)
+
+#### Diccionarios
+
+```
+departamentos:
+  antioquia: medellin
+  caldas: manizales
+  risaralda: pereira
+
+---
+...
+- name: crear carpetas
+  ansible.builtin.file:
+    name: "{{ departamentos.antioquia }}"
+    state: directory
+  register: path_carpetas
+
+- name: crear archivos
+  ansible.builtin.file:
+    name: "{{ path_carpetas }}/departamentos['antioquia']"
+    state: file
+```
+Documentación de [Variables](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_variables.html)
+
+### Archivos Jinja2 (templates)
+
+Ansible utiliza plantillas Jinja2 para permitir expresiones dinámicas y acceso a variables y facts. Puedes usar plantillas con el módulo de template. Por ejemplo, puedes crear una plantilla para un archivo de configuración, luego desplegar ese archivo de configuración en múltiples entornos y suministrar los datos correctos (dirección IP, nombre de host, versión) para cada entorno. También puede utilizar plantillas en playbooks directamente, mediante la creación de plantillas de nombres de tareas y mucho más. Puedes utilizar todos los filtros y pruebas estándar incluidos en Jinja2. Ansible incluye filtros especializados adicionales para seleccionar y transformar datos, pruebas para evaluar expresiones de plantillas y complementos Lookup para recuperar datos de fuentes externas como archivos, API y bases de datos para su uso en plantillas.
+
+Toda la creación de templates tiene lugar en el nodo de control de Ansible antes de que la tarea sea enviada y ejecutada en la máquina de destino. Este enfoque minimiza los requisitos de paquetes en el destino (jinja2 sólo es necesario en el nodo de control). También limita la cantidad de datos que Ansible pasa a la máquina de destino. Ansible analiza las plantillas en el nodo de control y pasa sólo la información necesaria para cada tarea a la máquina de destino, en lugar de pasar todos los datos en el nodo de control y analizarlos en el destino.
+
+*Ejemplo:*
+
+Ubicación de archiovops
+```
+...
+│   
+├── playbooks
+│   ├── 2do_playbook.yml
+│   ├── 3er_play_variables.yml
+│   ├── inventory
+│   ├── mi_primer_playbook.yml
+│   ├── templates
+│   │   └── hosts.j2
+│   └── vars
+│       ├── dbs.yml
+...
+```
+
+*Ejemplo Crear el archivo hosts:*
+
+```
+---
+- name: Crear archivo hosts
+  hosts: all
+  tasks:
+  - name: escribir en el archivo hosts
+    ansible.builtin.template:
+       src: templates/hosts.j2
+       dest: /etc/hosts
+```
+
+*Contenido del archivo template:*
+
+```
+{{ ansible_facts['ip'] }} {{ ansible_facts['hostname'] }} {{ ansible_facts['hostname_fqdn'] }}
+```
+
