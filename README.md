@@ -665,3 +665,6 @@ Ubicación de archiovops
 {{ ansible_facts['ip'] }} {{ ansible_facts['hostname'] }} {{ ansible_facts['hostname_fqdn'] }}
 ```
 
+Documentación [Anisble Templates](https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_templating.html)
+
+Documentación [Template Jinja](https://jinja.palletsprojects.com/en/latest/templates/)
